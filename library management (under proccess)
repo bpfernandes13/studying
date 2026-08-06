@@ -143,7 +143,9 @@ def remove():
                 remove_loop = True
             elif remove_confirmation == 'N':
                 continue
-            
+            else:
+                print('Opção inválida. Digite S ou N.')
+
         except (ValueError):
             print('Você não digitou um número.')
 
