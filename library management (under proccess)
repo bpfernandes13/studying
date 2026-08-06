@@ -1,4 +1,3 @@
-## gpt
 import os
 import json
 
@@ -132,8 +131,8 @@ def give_back():
 def remove():
     clean_()
     show_books()
-    remove_loop = ''
-    while remove_loop == '':
+    remove_loop = False
+    while not remove_loop:
         try:
             i = int(input('Digite o número do livro a ser removido: '))
             remove_confirmation = input('Você tem certeza que quer apagar (S/N)? ').strip().upper()
@@ -141,7 +140,7 @@ def remove():
                 book = books_list.pop(i - 1)
                 save()
                 print(f'{book.name} removido com sucesso.')
-                remove_loop = 'Lucas Sila'
+                remove_loop = True
             elif remove_confirmation == 'N':
                 continue
             
