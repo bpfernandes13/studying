@@ -1,0 +1,231 @@
+## gpt
+import os
+import json
+
+
+
+books_list = []
+file_path = os.path.dirname(__file__)
+file_final = os.path.join(file_path, 'biblioteca_controle.json')
+
+def save():
+    books_dict = [book.to_dict() for book in books_list]
+    with open(file_final, 'w', encoding='utf8') as file:
+        json.dump(books_dict, file, indent=2)
+
+def load():
+    global books_list
+    try:
+        with open(file_final, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+            books_list = [Book.from_dict(item) for item in dados]
+    except FileNotFoundError:
+        books_list = []
+     
+def clean_():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def show_menu():
+        
+        print()
+        print('Menu:\n'
+        '1 - Cadastrar livro\n' \
+        '2 - Listar livros\n' \
+        '3 - Emprestar livro\n' \
+        '4 - Devolver livro\n' \
+        '5 - Remover livro\n' \
+        '0 - Sair')
+        answer = input('O que deseja fazer? ')
+        return answer
+       
+
+def register():
+    clean_()
+    author = ''
+    year = ''
+    title = ''
+    while title == '':
+        title = input('Digite o título do livro: ').strip()
+        if not title:
+            print('Você tem que dar um nome para o livro.')
+            continue
+        
+        for book in books_list:
+                    if book.name.lower() == title.lower():
+                        print("Esse livro já está cadastrado!")
+                        return
+            
+
+    while author == '':
+        author = input('Digite o autor do livro: ').strip()
+        if not author:
+            print('Você tem que digitar um autor')
+
+    while year == '':
+        year = input('Digite o ano: ').strip()
+        if not year:
+            print('Você não digitou um ano.')
+        else:
+            try:
+                year = int(year)
+            except ValueError:
+                print('Você não digitou um número.')
+                year = ''
+            
+    
+    book = Book(title.title(), author.title(), year)
+    books_list.append(book)
+    print()
+    save()
+    print('Livro adicionado com sucesso')
+
+
+def show_books():
+    clean_()
+    if not books_list:
+        print("Nenhum livro cadastrado.")
+        return
+    print('Lista de livros:\n')
+    n = 1
+    for book in books_list:
+          print (f'{n}- Name: {book.name}\n Author: {book.author}\nYear: {book.year}\nBorrowed: {book.borrowed}')
+          n += 1
+
+def borrow():
+    clean_()
+    show_books()
+    print()
+    book_title = input('Digite o livro para emprestar: ').strip()
+
+    for book in books_list:
+        if book.name.lower() == book_title.lower():
+            if not book.borrowed:
+                book.borrowed = True
+                print('Livro emprestado com sucesso.')
+                save()
+            else:
+                print('Livro já está emprestado.')
+            return
+
+    print('Livro não encontrado.')
+
+
+def give_back():
+    clean_()
+    show_books()
+    print()
+    book_title = input('Digite o livro para devolver: ').strip()
+
+    for book in books_list:
+        if book.name.lower() == book_title.lower():
+            if book.borrowed:
+                book.borrowed = False
+                print('Livro devolvido com sucesso.')
+                save()
+            else:
+                print('Livro não está emprestado.')
+            return
+
+    print('Livro não encontrado.')
+
+
+def remove():
+    clean_()
+    show_books()
+    remove_loop = ''
+    while remove_loop == '':
+        try:
+            i = int(input('Digite o número do livro a ser removido: '))
+            remove_confirmation = input('Você tem certeza que quer apagar (S/N)? ').strip().upper()
+            if remove_confirmation == 'S':
+                book = books_list.pop(i - 1)
+                save()
+                print(f'{book.name} removido com sucesso.')
+                remove_loop = 'Lucas Sila'
+            elif remove_confirmation == 'N':
+                continue
+            
+        except (ValueError):
+            print('Você não digitou um número.')
+
+        except(IndexError):
+            print('Você não digitou um valor válido.')
+   
+    
+
+class Book:
+    def __init__(self, name, author, year):
+        self._year = year
+        self._author = author
+        self._name = name
+        self._borrowed = False
+
+    @property
+    def name(self):
+         return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
+    def author(self):
+         return self._author
+
+    @author.setter
+    def author(self, author):
+        self._author = author
+
+    @property
+    def year(self):
+        return self._year
+
+    @year.setter
+    def year(self, year):
+        self._year= year
+
+    @property
+    def borrowed(self):
+        return self._borrowed
+
+    @borrowed.setter
+    def borrowed(self, borrowed):
+        self._borrowed = borrowed
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "author": self.author,
+            "year": self.year,
+            "borrowed": self.borrowed
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        book = cls(data["name"], data["author"], data["year"])
+        book.borrowed = data.get("borrowed", False)
+        return book
+
+    
+load()
+commands = {
+        '1': lambda: register(),
+        '2': lambda: show_books(),
+        '3': lambda: borrow(),
+        '4': lambda: give_back(),
+        '5': lambda: remove(),
+    }
+while True:
+    
+    pick = show_menu()
+
+    
+    command = commands.get(pick)
+    if pick == '0':
+        break
+    elif pick == '':
+        print('Você não digitou uma entrada válida.')
+    elif command:
+        command()
+    else:
+        print('Opção inválida.')
