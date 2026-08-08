@@ -1,9 +1,7 @@
+## gpt
 import os
 import json
 
-
-
-books_list = []
 file_path = os.path.dirname(__file__)
 file_final = os.path.join(file_path, 'biblioteca_controle.json')
 
@@ -13,19 +11,18 @@ def save():
         json.dump(books_dict, file, indent=2)
 
 def load():
-    global books_list
     try:
         with open(file_final, "r", encoding="utf-8") as f:
             dados = json.load(f)
             books_list = [Book.from_dict(item) for item in dados]
+            return books_list
     except FileNotFoundError:
-        books_list = []
+        return []
      
 def clean_():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def show_menu():
-        
         print()
         print('Menu:\n'
         '1 - Cadastrar livro\n' \
@@ -34,8 +31,7 @@ def show_menu():
         '4 - Devolver livro\n' \
         '5 - Remover livro\n' \
         '0 - Sair')
-        answer = input('O que deseja fazer? ')
-        return answer
+        return input('O que deseja fazer? ')
        
 
 def register():
@@ -53,8 +49,6 @@ def register():
                     if book.name.lower() == title.lower():
                         print("Esse livro já está cadastrado!")
                         return
-            
-
     while author == '':
         author = input('Digite o autor do livro: ').strip()
         if not author:
@@ -85,10 +79,9 @@ def show_books():
         print("Nenhum livro cadastrado.")
         return
     print('Lista de livros:\n')
-    n = 1
-    for book in books_list:
-          print (f'{n}- Name: {book.name}\n Author: {book.author}\nYear: {book.year}\nBorrowed: {book.borrowed}')
-          n += 1
+    for n, book in enumerate(books_list):
+          print (f'{n+1}- Name: {book.name}\n Author: {book.author}\nYear: {book.year}\nBorrowed: {book.borrowed}')
+        
 
 def borrow():
     clean_()
@@ -102,31 +95,32 @@ def borrow():
                 book.borrowed = True
                 print('Livro emprestado com sucesso.')
                 save()
+                break
             else:
                 print('Livro já está emprestado.')
-            return
+                break
+    else:
+        print('Livro não encontrado.')
 
-    print('Livro não encontrado.')
-
-
+            
 def give_back():
     clean_()
     show_books()
     print()
     book_title = input('Digite o livro para devolver: ').strip()
-
     for book in books_list:
         if book.name.lower() == book_title.lower():
             if book.borrowed:
                 book.borrowed = False
                 print('Livro devolvido com sucesso.')
                 save()
+                break
             else:
                 print('Livro não está emprestado.')
-            return
-
-    print('Livro não encontrado.')
-
+                break
+    else:
+        print('Livro não encontrado.')
+            
 
 def remove():
     clean_()
@@ -145,7 +139,7 @@ def remove():
                 continue
             else:
                 print('Opção inválida. Digite S ou N.')
-
+                
         except (ValueError):
             print('Você não digitou um número.')
 
@@ -153,7 +147,6 @@ def remove():
             print('Você não digitou um valor válido.')
    
     
-
 class Book:
     def __init__(self, name, author, year):
         self._year = year
@@ -207,8 +200,7 @@ class Book:
         book.borrowed = data.get("borrowed", False)
         return book
 
-    
-load()
+books_list = load()
 commands = {
         '1': lambda: register(),
         '2': lambda: show_books(),
@@ -217,15 +209,12 @@ commands = {
         '5': lambda: remove(),
     }
 while True:
-    
     pick = show_menu()
-
-    
     command = commands.get(pick)
     if pick == '0':
         break
-    elif pick == '':
-        print('Você não digitou uma entrada válida.')
+    elif not pick:
+        print('Você não digitou uma entrada.')
     elif command:
         command()
     else:
